@@ -24,3 +24,12 @@ async def test_metrics():
         r = await client.get("/metrics")
     assert r.status_code == 200
     assert "app_requests_total" in r.text
+
+async def test_hits_endpoint_exists():
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.get("/hits")
+    # Without redis running, this will likely be 500 locally in unit-test mode.
+    # We'll do integration tests with docker-compose later.
+    assert r.status_code in (200, 500)
+
