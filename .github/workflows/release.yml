@@ -1,0 +1,36 @@
+name: Release (Push to ECR)
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  push-to-ecr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::929082011887:role/devops-handson-github-actions-ecr
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app
+          push: true
+          tags: |
+            929082011887.dkr.ecr.eu-central-1.amazonaws.com/devops-handson-app:${{ github.sha }}
+            929082011887.dkr.ecr.eu-central-1.amazonaws.com/devops-handson-app:latest
+
